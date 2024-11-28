@@ -8,6 +8,7 @@ int main(){
 		printf("> ");
 		char* user_input = readInput();
 		args = parseInput(user_input);
+		executeCommand(args);
 	}	
 	
 	return 0;
@@ -51,6 +52,32 @@ char** parseInput(char* userInput) {
 	splitedInput[pos] = NULL;
 		
 	return splitedInput;
+}
+
+void executeCommand(char** args) {
+
+	int pid = fork(), status;
+	
+	if(pid < 0) {
+		fprintf(stderr, "Couldn't fork");
+		exit(-1);
+	}
+	
+	if(pid == 0) { // Child
+		status = execvp(args[0], args);
+		if(status < 0) {
+			if(errno == ENOENT) 
+				fprintf(stderr, "unknown command: %s\n", args[0]);
+			else 
+				fprintf(stderr, "error upon executing: %s\n", strerror(errno));
+			exit(-1);
+		}
+	} else { // Parent
+		do {
+			waitpid(-1, &status, WUNTRACED); 
+		} while(!WIFEXITED(status) && !WIFSIGNALED(status));
+	}
+	
 }
 
 int calcArgNum(char* userInput) {
