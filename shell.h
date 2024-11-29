@@ -1,20 +1,15 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <errno.h>
+#include "master.h"
+#include "builtins.h"
 
-#define BUF_SIZE 3
 #define DELIM " \t\r\a\n"
 
-char* readInput();
-char** parseInput(char*);
-int calcArgNum(char*);
-int calcArgLength(char*);
-void executeCommand(char**);
+char* read_input();
+char** parse_input(char*);
+int calc_arg_num(char*);
+void execute_command(char**);
+
 
 #endif

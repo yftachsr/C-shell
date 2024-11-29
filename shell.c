@@ -1,20 +1,23 @@
 #include "shell.h"
 
+char cwd[PATH_MAX] = { '\0' };
+
 int main(){
 
 	char** args;
+	getcwd(cwd, sizeof(cwd));   
 	for(;;) {
-		
+		printf("%s", cwd);
 		printf("> ");
-		char* user_input = readInput();
-		args = parseInput(user_input);
-		executeCommand(args);
+		char* user_input = read_input();
+		args = parse_input(user_input);
+		execute_command(args);
 	}	
 	
 	return 0;
 }
 
-char* readInput() {
+char* read_input() {
 
 	char* pb = NULL;
 	size_t bufsize = 0;
@@ -29,32 +32,39 @@ char* readInput() {
 	return pb;
 }
 
-char** parseInput(char* userInput) {
+char** parse_input(char* user_input) {
 	
-	int numOfArgs = calcArgNum(userInput);
-	char** splitedInput = malloc(numOfArgs * sizeof(char*) + 1);
+	char** splited_input = malloc(calc_arg_num(user_input) * sizeof(char*) + 1);
 	char* token;
 	
-	if(splitedInput == NULL) {
+	if(splited_input == NULL) {
 		fprintf(stderr, "Couldn't allocate memory");
 		exit(-1);
 	}
 	
-	token = strtok(userInput, DELIM);
+	token = strtok(user_input, DELIM);
 	int pos = 0;
 	
 	while(token != NULL) {
-		splitedInput[pos] = token;
+		splited_input[pos] = token;
 		pos++;
 		token = strtok(NULL, DELIM);
 	}
 	
-	splitedInput[pos] = NULL;
+	splited_input[pos] = NULL;
 		
-	return splitedInput;
+	return splited_input;
 }
 
-void executeCommand(char** args) {
+void execute_command(char** args) {
+
+
+	for(int i = 0; i < builtins_num(); i++) {
+		if(strcmp(args[0], builtins[i]) == 0) {
+			(*builtin_funcs[i])(args);
+			return;
+		}
+	}
 
 	int pid = fork(), status;
 	
@@ -80,22 +90,30 @@ void executeCommand(char** args) {
 	
 }
 
-int calcArgNum(char* userInput) {
+int calc_arg_num(char* user_input) {
 	
 	int counter = 0;
 	int index = 0;
 	
-	while(strchr(DELIM, userInput[index]) != NULL) //skip white character in the begining of the input
+	while(strchr(DELIM, user_input[index]) != NULL) //skip white character in the begining of the input
 		index++;
 	
-	for(; userInput[index] != '\0'; index++) {
-		if(counter > 0 && strchr(DELIM, userInput[index-1]) != NULL) //ignore consecutive white spaces
+	for(; user_input[index] != '\0'; index++) {
+		if(counter > 0 && strchr(DELIM, user_input[index-1]) != NULL) //ignore consecutive white spaces
 			continue;
-		if(strchr(DELIM, userInput[index]) != NULL)
+		if(strchr(DELIM, user_input[index]) != NULL)
 			counter++;
 	}
 	
 	return counter;
 	
 }
+
+
+
+
+	
+	
+
+
 
